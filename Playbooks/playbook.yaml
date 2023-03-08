@@ -39,7 +39,7 @@
   tasks:
     - name: Copy web application files
       copy:
-        src: /path/to/webapp
+        src: /webapp.html
         dest: /usr/share/nginx/html
         owner: nginx
         group: nginx
