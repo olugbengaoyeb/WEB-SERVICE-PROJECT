@@ -1,0 +1,81 @@
+---
+- name: Install and Configure Nginx Web Server
+  hosts: web-servers
+  become: true
+  
+  tasks:
+    - name: Install Nginx web server
+      yum:
+        name: nginx
+        state: present
+        
+    - name: Start Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: true
+        
+    - name: Configure Nginx to listen on port 8080
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '^listen       80;'
+        line: 'listen       8080;'
+        state: present
+        backup: yes
+        
+    - name: Allow HTTP traffic through the firewall
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+        immediate: true
+
+
+---
+- name: Copy Web Application Files
+  hosts: web-servers
+  become: true
+
+  tasks:
+    - name: Copy web application files
+      copy:
+        src: /path/to/webapp
+        dest: /usr/share/nginx/html
+        owner: nginx
+        group: nginx
+        mode: '0644'
+
+
+
+---
+- name: Configure Nginx to Listen on Port 8080
+  hosts: web-servers
+  become: true
+
+  tasks:
+    - name: Configure Nginx to listen on port 8080
+      lineinfile:
+        path: /etc/nginx/nginx.conf
+        regexp: '^listen       80;'
+        line: 'listen       8080;'
+        state: present
+        backup: yes
+
+
+---
+- name: Test Web Service
+  hosts: web-servers
+
+  tasks:
+    - name: Test web service
+      uri:
+        url: http://localhost:8080
+        method: GET
+        return_content: yes
+      register: result
+
+    - name: Verify response from web service
+      assert:
+        that:
+          - result.status == 200
+          - result.content.find("Welcome to my web service") >= 0
